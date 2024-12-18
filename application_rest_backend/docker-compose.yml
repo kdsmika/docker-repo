@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    networks:
+      - networkmysql
+    ports:
+      - "3306:3306"  # Expose MySQL on port 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rest_db
+    volumes:
+      - mysql-data:/var/lib/mysql # Persist MySQL data
+  
+  # Redis Service
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - networkmysql
+    ports:
+      - "6379:6379" # Expose Redis on port 6379
+    
+  # Spring Boot backend
+  rest-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    container_name: restContainer
+    networks:
+      - networkmysql
+    ports:
+      - "8383:8383" # Expose Spring Boot on port 8080
+    depends_on:  # wait for running below container
+      - mysql
+      - redis
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB_NAME: rest_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+
+  # Spring Boot frontend
+  ui-application:
+    build:
+      context: ../nagarro
+      dockerfile: Dockerfile-ui
+    container_name: uiContainer
+    networks:
+      - networkmysql
+    ports:
+      - "8484:8484"   # Expose the frontend on port 80
+    depends_on:
+      - rest-backend
+
+# Define a volume for persisting MySQL data
+volumes:
+  mysql-data:
+    driver: local
+
+# Define the network for communication between services
+networks:
+  networkmysql:
+    driver: bridge

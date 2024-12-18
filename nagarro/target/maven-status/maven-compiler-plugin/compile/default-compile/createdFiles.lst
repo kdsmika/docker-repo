@@ -1,0 +1,6 @@
+com\nagarro\model\Book.class
+com\nagarro\service\RestService.class
+com\nagarro\controller\AdminController.class
+com\nagarro\NagarroApplication.class
+com\nagarro\service\LoginService.class
+com\nagarro\model\Author.class
